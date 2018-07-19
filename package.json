@@ -1,0 +1,25 @@
+{
+  "name": "keebler",
+  "version": "1.0.0",
+  "description": "encrypted-messenger",
+  "main": "controller.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manuel-castro/keebler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/manuel-castro/keebler/issues"
+  },
+  "homepage": "https://github.com/manuel-castro/keebler#readme",
+  "dependencies": {
+    "pg": "^7.4.3",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.38.0"
+  }
+}
