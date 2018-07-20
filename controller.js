@@ -27,11 +27,25 @@ let User = sequelize.define('user', {
 let Messages = sequelize.define('message', {
     messages: Sequelize.STRING,
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    senderId: {type: Sequelize.INTEGER, allowNull: false}
+    senderId: {type: Sequelize.INTEGER, allowNull: false},
+    roomId: {type: Sequelize.INTEGER, allowNull: false}
 });
+let Room = sequelize.define('room', {
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: Sequelize.STRING, allowNull: false}
+});
+
 
 // 1:M
 User.hasMany(Messages, {foreignKey: 'senderId'});
+Room.hasMany(Messages, {foreignKey: 'roomId'});
+Room.belongsToMany(User, {
+    through: 'user_room_link'
+    // foreignKey: ''
+});
+User.belongsToMany(Room, {
+    through: 'user_room_link'
+})
 // Messages.belongsTo(User, {foreignKey: 'id'});
 
 // make a promise here!!!
