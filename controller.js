@@ -26,8 +26,8 @@ let User = sequelize.define('user', {
 
 let Messages = sequelize.define('message', {
     messages: Sequelize.STRING,
-    id: {type: Sequelize.INTEGER, primaryKey: true},
-    senderId: Sequelize.INTEGER
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    senderId: {type: Sequelize.INTEGER, allowNull: false}
 });
 
 // 1:M
@@ -35,31 +35,39 @@ User.hasMany(Messages, {foreignKey: 'senderId'});
 // Messages.belongsTo(User, {foreignKey: 'id'});
 
 // make a promise here!!!
-sequelize.sync({force: true}) //.then(() => {
-    // User.create({
-    //     name: 'test',
-    //     password: 'ilovetesting',
-    //     id: 1234
-    // }).then(() => {
-    //         Messages.create({
-    //             messages: 'hello world!',
-    //             id: 5678,
-    //             senderId: 1234
-    //         });
-//         }
-//     );
-// });
+sequelize.sync();
+
+let activeUser = {};
 
 let createUser = (req, res) => {
-    User.create({name: req.body.name, password: req.body.password}, (err, userInstance) => {
+    User.create({name: req.body.name, password: req.body.password}).then((userInstance, err) => {
         if (err) {
-          return res.status(404).json({ message: "Status code 404"});
+          return res.status(404).send({ message: "Status code 404"});
         }
-        res.json(userInstance);
+        // console.log('userInstance: ', userInstance);
+        activeUser.id = userInstance.dataValues.id;
+        res.redirect('/home');
     });
 }
 
-// given a request will create a new user in the user table
+let createMessage = (req, res) => {
+    Messages.create({messages: req.body.message, senderId: activeUser.id}).then((messageIntance, err) => {
+        if (err) {
+            return res.status(400).send({message: 'Error code 400'});
+        }
+        res.redirect('/home');
+        console.log('req.body.message: ', req.body.message);
+    })
+}
+
+let getAllMessages = (req, res) => {
+    Messages.findAll().then((messages, err) => {
+        if (err) console.log('error inside getAllMessages: ', err);
+        res.render('../client/home', {Messages: messages})
+    })
+}
+
+module.exports = {createUser, createMessage, getAllMessages}
 
 
 

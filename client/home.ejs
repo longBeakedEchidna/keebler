@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>chathome</title>
+</head>
+<body>
+    <h1>Home</h1>
+        <form method="POST" action='/message'>
+            <input type="text" name="message" placeholder="insertMessage" autocomplete="off">
+            <input type="submit" value="submit">
+        </form> 
+        <ul id='chatWindow'> 
+            <% Messages.forEach(function(message) { %>
+             <li>
+                <%= message.senderId %>
+                <%= message.messages %>
+                <%= message.createdAt %>
+             </li>   
+             <% }) %>    
+        </ul> 
+</body>
+</html>
