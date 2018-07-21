@@ -7,7 +7,13 @@
     <title>chathome</title>
 </head>
 <body>
-    <h1>Home</h1>
+    <h1><%= roomName %></h1>
+        <button id="createRoomButton">Create room</button>
+        <script type="text/javascript">
+            document.getElementById('createRoomButton').onclick = function() {
+                location.href = '/createRoom';
+            };
+        </script>
         <form method="POST" action='/message'>
             <input type="text" name="message" placeholder="insertMessage" autocomplete="off">
             <input type="submit" value="submit">
@@ -16,7 +22,7 @@
             <% Messages.forEach(function(message) { %>
              <li>
                 <%= message.senderId %>
-                <%= message.messages %>
+                <%= message.message %>
                 <%= message.createdAt %>
              </li>   
              <% }) %>    

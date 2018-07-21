@@ -24,8 +24,8 @@ let User = sequelize.define('user', {
    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true} 
 });
 
-let Messages = sequelize.define('message', {
-    messages: Sequelize.STRING,
+let Message = sequelize.define('message', {
+    message: Sequelize.STRING,
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     senderId: {type: Sequelize.INTEGER, allowNull: false},
     roomId: {type: Sequelize.INTEGER, allowNull: false}
@@ -37,68 +37,85 @@ let Room = sequelize.define('room', {
 
 
 // 1:M
-User.hasMany(Messages, {foreignKey: 'senderId'});
-Room.hasMany(Messages, {foreignKey: 'roomId'});
+User.hasMany(Message, {foreignKey: 'senderId'});
+Room.hasMany(Message, {foreignKey: 'roomId'});
 Room.belongsToMany(User, {
     through: 'user_room_link'
-    // foreignKey: ''
 });
 User.belongsToMany(Room, {
     through: 'user_room_link'
-})
-// Messages.belongsTo(User, {foreignKey: 'id'});
+});
+Room.create({name: 'Main'});
 
-// make a promise here!!!
 sequelize.sync();
 
-let activeUser = {};
+const databaseController = {
+    createUser: (req, res) => {
+        User.create({name: req.body.name, password: req.body.password}).then((userInstance, error) => {
+            if (error) {
+              return res.status(400).send({message: error});
+            }
+            Room.findOne({where: {id: 1}}).then((roomInstance, error) => {
+                if (error) {
+                    return res.status(400).send({ message: error});
+                }
+                userInstance.addRoom(roomInstance);
+                console.log(userInstance);
+                res.cookie('userId', userInstance.id);
+                res.cookie('roomId', 1);
+                res.cookie('roomName', 'Main');
+                res.redirect('/home');
+            });
+        });
+    },
 
-let createUser = (req, res) => {
-    User.create({name: req.body.name, password: req.body.password}).then((userInstance, err) => {
-        if (err) {
-          return res.status(404).send({ message: "Status code 404"});
-        }
-        // console.log('userInstance: ', userInstance);
-        activeUser.id = userInstance.dataValues.id;
-        res.redirect('/home');
-    });
-}
+    createMessage: (req, res) => {
+        Message.create({message: req.body.message, senderId: req.cookies.userId, roomId: req.cookies.roomId}).then((messageIntance, error) => {
+            if (error) {
+                return res.status(400).send({message: error});
+            }
+            res.redirect('/home');
+        })
+    },
 
-let createMessage = (req, res) => {
-    Messages.create({messages: req.body.message, senderId: activeUser.id}).then((messageIntance, err) => {
-        if (err) {
-            return res.status(400).send({message: 'Error code 400'});
-        }
-        res.redirect('/home');
-        console.log('req.body.message: ', req.body.message);
-    })
-}
+    getMessages: (req, res) => {
+        Message.findAll({where: {roomId: req.cookies.roomId}}).then((messages, error) => {
+            if (error) {
+                return res.status(400).send({message: error});
+            }
+            res.render('../client/home', {roomName:req.cookies.roomName, Messages: messages});
+        })
+    },
 
-let getAllMessages = (req, res) => {
-    Messages.findAll().then((messages, err) => {
-        if (err) console.log('error inside getAllMessages: ', err);
-        res.render('../client/home', {Messages: messages})
-    })
-}
+    getAllUsers: (req, res) => {
+        User.findAll().then((users, error) => {
+            if (error) {
+                return res.status(400).send({message: error});
+            }
+            res.render('../client/createRoom', {Users: users});
+        })
+    },
 
-module.exports = {createUser, createMessage, getAllMessages}
+    createRoom: (req, res) => {
+        Room.create({name: req.body.name}).then((roomInstance, error) => {
+            if (error) {
+                return res.status(400).send({message: error});
+            }
+            const findUserPromises = [];
+            req.body.users.forEach(user => {
+                console.log('user', user);
+                findUserPromises.push(User.findOne({
+                    where: {name: user}
+                }));
+            });
+            Promise.all(findUserPromises).then((users, error) => {
+                roomInstance.addUsers(users);
+                res.cookie('roomName', roomInstance.name);
+                res.cookie('roomId', roomInstance.id);
+                res.render('../client/home', {roomName: roomInstance.name, Messages: []});
+            });
+        });
+    }
+};
 
-
-
-// Messages.sync({force:true}).then(() => {
-//     return Messages.create({
-//         messages: 'hello world!',
-//         id: 5678,
-//         senderId: 9101112
-//     });
-// });
-
-// // force: true will drop the table if it already exists
-// User.sync({force: true}).then(() => {
-//     // Table created
-//     return User.create({
-//       firstName: 'John',
-//       lastName: 'Hancock'
-//     });
-//   });
-  
+module.exports = databaseController;
