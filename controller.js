@@ -45,7 +45,7 @@ Room.belongsToMany(User, {
 User.belongsToMany(Room, {
     through: 'user_room_link'
 });
-Room.create({name: 'Main'});
+// Room.create({name: 'Main'});
 
 sequelize.sync();
 
@@ -55,16 +55,18 @@ const databaseController = {
             if (error) {
               return res.status(400).send({message: error});
             }
-            Room.findOne({where: {id: 1}}).then((roomInstance, error) => {
+            Room.findOne({where: {id: 2}}).then((roomInstance, error) => {
                 if (error) {
                     return res.status(400).send({ message: error});
                 }
-                userInstance.addRoom(roomInstance);
-                console.log(userInstance);
-                res.cookie('userId', userInstance.id);
-                res.cookie('roomId', 1);
-                res.cookie('roomName', 'Main');
-                res.redirect('/home');
+                userInstance.addRoom(roomInstance).then(() => {
+                    res.cookie('userId', userInstance.id);
+                    res.cookie('userName', userInstance.name);
+                    res.cookie('roomId', 2);
+                    res.cookie('roomName', 'Main');
+                    res.redirect('/home');
+                });
+                // console.log(userInstance);
             });
         });
     },
@@ -83,7 +85,7 @@ const databaseController = {
             if (error) {
                 return res.status(400).send({message: error});
             }
-            res.render('../client/home', {roomName:req.cookies.roomName, Messages: messages});
+            res.render('../client/home', {roomName:req.cookies.roomName, Messages: messages, rooms: res.locals.rooms});
         })
     },
 
@@ -101,8 +103,18 @@ const databaseController = {
             if (error) {
                 return res.status(400).send({message: error});
             }
+            let userArray = [];
+            if (typeof(req.body.users) === 'string') {
+                userArray.push(req.body.users);
+            }
+            else if (typeof(req.body.users) !== 'undefined') {
+                userArray = req.body.users;
+            }
             const findUserPromises = [];
-            req.body.users.forEach(user => {
+            if (! userArray.includes(req.cookies.userName)) {
+                userArray.push(req.cookies.userName);
+            }
+            userArray.forEach(user => {
                 console.log('user', user);
                 findUserPromises.push(User.findOne({
                     where: {name: user}
@@ -112,8 +124,37 @@ const databaseController = {
                 roomInstance.addUsers(users);
                 res.cookie('roomName', roomInstance.name);
                 res.cookie('roomId', roomInstance.id);
-                res.render('../client/home', {roomName: roomInstance.name, Messages: []});
+                res.render('../client/home', {roomName: roomInstance.name, Messages: [], rooms: res.locals.rooms});
             });
+        });
+    },
+
+    getRooms: (req, res, next) => {
+        Room.findAll({
+            include: [{
+                model: User,
+                through: { 
+                    attributes: ['id']              
+                },
+                where: {
+                    id: req.cookies.userId
+                }
+            }]
+        }).then((rooms, error) => {
+            res.locals.rooms = rooms;
+            next();
+        });
+    },
+
+    changeRooms: (req, res, next) => {
+        Room.findOne({
+            where: {id: req.cookies.roomId}
+        }).then((roomInstance, error) => {
+            if (error) {
+                return res.status(400).send({message: error});
+            }
+            req.cookies.roomName = roomInstance.name;
+            next();
         });
     }
 };

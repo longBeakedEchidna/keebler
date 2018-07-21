@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="styles.css">
     <title>chathome</title>
 </head>
 <body>
@@ -14,10 +15,11 @@
                 location.href = '/createRoom';
             };
         </script>
-        <form method="POST" action='/message'>
+        <form id="createMessageForm" method="POST" action='/message'>
             <input type="text" name="message" placeholder="insertMessage" autocomplete="off">
             <input type="submit" value="submit">
-        </form> 
+        </form>
+        Past Chats 
         <ul id='chatWindow'> 
             <% Messages.forEach(function(message) { %>
              <li>
@@ -26,6 +28,16 @@
                 <%= message.createdAt %>
              </li>   
              <% }) %>    
-        </ul> 
+        </ul>
+        Rooms
+        <ul id='roomList'> 
+            <% rooms.forEach(function(room) { %>
+             <li>
+                 <a class="roomLink" href="http://localhost:8080/room/<%= room.id %>/">
+                    <%= room.name %>
+                 </a>
+            </li>   
+             <% }) %>    
+        </ul>
 </body>
 </html>

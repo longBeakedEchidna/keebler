@@ -30,17 +30,20 @@ app.post('/message', databaseController.createMessage, (req, res) => {
 
 });
 
-app.get('/home', databaseController.getMessages, (req, res) => {
+app.get('/home', databaseController.getRooms, databaseController.getMessages, (req, res) => {
   // res.sendFile(path.join(__dirname + '/client/home.html'));
 });
 
-// app.get('/room/:roomId', controller.getMessages)
+app.get('/room/:roomId/', (req, res, next) => {
+  req.cookies.roomId = req.params.roomId;
+  next();
+}, databaseController.changeRooms, databaseController.getRooms, databaseController.getMessages);
 
 app.get('/createRoom', databaseController.getAllUsers, (req, res) => {
   // res.render('../client/home', {Messages: messages});
 });
 
-app.post('/createRoom', databaseController.createRoom, (req, res) => {
+app.post('/createRoom', databaseController.getRooms, databaseController.createRoom, (req, res) => {
   console.log('new room created');
 })
 
