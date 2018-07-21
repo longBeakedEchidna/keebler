@@ -23,9 +23,9 @@
         <ul id='chatWindow'> 
             <% Messages.forEach(function(message) { %>
              <li>
-                <%= message.senderId %>
+                <span style="font-weight:bold"><%= message.userName %>:</span>
                 <%= message.message %>
-                <%= message.createdAt %>
+                <%= String(message.createdAt).substring(4,21) %>
              </li>   
              <% }) %>    
         </ul>

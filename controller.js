@@ -85,13 +85,23 @@ const databaseController = {
     },
 
     getMessages: (req, res) => {
-        Message.findAll({where: {roomId: req.cookies.roomId}}).then((messages, error) => {
+        Message.findAll({
+            where: {roomId: req.cookies.roomId}
+        }).then((messages, error) => {
             if (error) {
                 return res.status(400).send({message: error});
             }
-            console.log('get messages roomId cookie', req.cookies.roomId);
-            console.log('get messages roomName cookie', req.cookies.roomName);
-            res.render('../client/home', {userName: req.cookies.userName, roomName:req.cookies.roomName, Messages: messages, rooms: res.locals.rooms, users: res.locals.users});
+            const findUserPromises = [];
+            // This is bad. I know.
+            messages.forEach(message => {
+                findUserPromises.push(User.findOne({where: {id: message.senderId}}));
+            })
+            Promise.all(findUserPromises).then((users, error) => {
+                users.forEach(user => {
+                    messages.filter(message => message.senderId === user.id).forEach(message => message.userName = user.name);
+                });
+                res.render('../client/home', {userName: req.cookies.userName, roomName:req.cookies.roomName, Messages: messages, rooms: res.locals.rooms, users: res.locals.users});
+            });
         })
     },
 
