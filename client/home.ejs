@@ -8,7 +8,7 @@
     <title>chathome</title>
 </head>
 <body>
-    <h1><%= roomName %></h1>
+    <h1>Hi <%= userName %>, welcome to room <%= roomName %></h1>
         <button id="createRoomButton">Create room</button>
         <script type="text/javascript">
             document.getElementById('createRoomButton').onclick = function() {
@@ -19,7 +19,7 @@
             <input type="text" name="message" placeholder="insertMessage" autocomplete="off">
             <input type="submit" value="submit">
         </form>
-        Past Chats 
+        Conversation History 
         <ul id='chatWindow'> 
             <% Messages.forEach(function(message) { %>
              <li>
@@ -28,6 +28,14 @@
                 <%= message.createdAt %>
              </li>   
              <% }) %>    
+        </ul>
+        Participants
+        <ul id='participants'>
+            <% users.forEach(function(user) { %>
+                <li>
+                    <%= user.name %>
+                </li>   
+            <% }) %> 
         </ul>
         Rooms
         <ul id='roomList'> 

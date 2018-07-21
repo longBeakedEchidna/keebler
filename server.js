@@ -18,9 +18,17 @@ app.use((req, res, next) => {
   next();
 });
   
-app.get('/', (req, res) =>
-  res.sendFile(path.join(__dirname + '/client/index.html'))
-);
+app.get('/', (req, res) => {
+  res.render('../client/login', {incorrectCredentials: false});
+  // res.sendFile(path.join(__dirname + '/client/login.html'))
+});
+
+app.get('/register', (req, res) => {
+  res.render('../client/register', {usernameTaken: false});
+//res.sendFile(path.join(__dirname + '/client/index.html'))
+});
+
+app.post('/login', databaseController.login);
 
 app.post('/register', databaseController.createUser, (req, res) => {
 
@@ -30,14 +38,17 @@ app.post('/message', databaseController.createMessage, (req, res) => {
 
 });
 
-app.get('/home', databaseController.getRooms, databaseController.getMessages, (req, res) => {
+app.get('/home', databaseController.getRooms, databaseController.getRoomUsers, databaseController.getMessages, (req, res) => {
   // res.sendFile(path.join(__dirname + '/client/home.html'));
 });
 
 app.get('/room/:roomId/', (req, res, next) => {
+  console.log('req params roomId', req.params.roomId);
+  console.log('req cookies roomId', req.cookies.roomId);
   req.cookies.roomId = req.params.roomId;
+  console.log('req cookies roomId after assigning', req.cookies.roomId);
   next();
-}, databaseController.changeRooms, databaseController.getRooms, databaseController.getMessages);
+}, databaseController.changeRooms, databaseController.getRooms, databaseController.getRoomUsers, databaseController.getMessages);
 
 app.get('/createRoom', databaseController.getAllUsers, (req, res) => {
   // res.render('../client/home', {Messages: messages});

@@ -51,7 +51,11 @@ sequelize.sync();
 
 const databaseController = {
     createUser: (req, res) => {
-        User.create({name: req.body.name, password: req.body.password}).then((userInstance, error) => {
+        User.create({name: req.body.name, password: req.body.password}).catch((error) => {
+            // console.log('error caught');
+            // return res.status(400).send({message: error});
+            res.render('../client/register', {usernameTaken: true});
+        }).then((userInstance, error) => {
             if (error) {
               return res.status(400).send({message: error});
             }
@@ -85,7 +89,9 @@ const databaseController = {
             if (error) {
                 return res.status(400).send({message: error});
             }
-            res.render('../client/home', {roomName:req.cookies.roomName, Messages: messages, rooms: res.locals.rooms});
+            console.log('get messages roomId cookie', req.cookies.roomId);
+            console.log('get messages roomName cookie', req.cookies.roomName);
+            res.render('../client/home', {userName: req.cookies.userName, roomName:req.cookies.roomName, Messages: messages, rooms: res.locals.rooms, users: res.locals.users});
         })
     },
 
@@ -115,7 +121,7 @@ const databaseController = {
                 userArray.push(req.cookies.userName);
             }
             userArray.forEach(user => {
-                console.log('user', user);
+                // console.log('user', user);
                 findUserPromises.push(User.findOne({
                     where: {name: user}
                 }));
@@ -124,7 +130,7 @@ const databaseController = {
                 roomInstance.addUsers(users);
                 res.cookie('roomName', roomInstance.name);
                 res.cookie('roomId', roomInstance.id);
-                res.render('../client/home', {roomName: roomInstance.name, Messages: [], rooms: res.locals.rooms});
+                res.render('../client/home', {userName: req.cookies.userName, roomName: roomInstance.name, Messages: [], rooms: res.locals.rooms, users: userArray});
             });
         });
     },
@@ -146,6 +152,23 @@ const databaseController = {
         });
     },
 
+    getRoomUsers: (req, res, next) => {
+        User.findAll({
+            include: [{
+                model: Room,
+                through: { 
+                    attributes: ['id']              
+                },
+                where: {
+                    id: req.cookies.roomId
+                }
+            }]
+        }).then((users, error) => {
+            res.locals.users = users;
+            next();
+        });
+    },
+
     changeRooms: (req, res, next) => {
         Room.findOne({
             where: {id: req.cookies.roomId}
@@ -154,9 +177,26 @@ const databaseController = {
                 return res.status(400).send({message: error});
             }
             req.cookies.roomName = roomInstance.name;
+            res.cookie('roomName', req.cookies.roomName);
+            res.cookie('roomId', req.cookies.roomId);
             next();
         });
-    }
+    },
+
+    login: (req, res) => {
+        User.findOne({ where: {name: req.body.name, password: req.body.password}}).then((userInstance, error) => {
+            if (! userInstance) {
+                res.render('../client/login', {incorrectCredentials: true});    
+            }
+            else {
+                res.cookie('userId', userInstance.id);
+                res.cookie('userName', userInstance.name);
+                res.cookie('roomId', 2);
+                res.cookie('roomName', 'Main');
+                res.redirect('/home');
+            }
+        });
+    },
 };
 
 module.exports = databaseController;
