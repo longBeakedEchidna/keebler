@@ -1,23 +1,32 @@
 const express = require ('express');
 const app = express();
+const router = require('./route.js') ;
+const passportSetup = require('./setup/passport-config.js');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const databaseController = require('./controller.js');
-
+const passport = require('passport');
+const cookieSession = require('cookie-session');
 const http = require('http');
 const bodyParser = require('body-parser');
-
+const keys = require('./setup/keys');
 const server = http.createServer(app);
-app.set('view engine', 'ejs');
 
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-
+app.use(cookieSession({
+  keys:keys.cookieSession.key,
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/auth',router);
 app.use((req, res, next) => {
   res.set({ 'Content-Type': 'text/html', charset: 'utf-8' });
   next();
 });
-  
+
 app.get('/', (req, res) => {
   res.render('../client/login', {incorrectCredentials: false});
   // res.sendFile(path.join(__dirname + '/client/login.html'))
@@ -28,7 +37,7 @@ app.get('/register', (req, res) => {
 //res.sendFile(path.join(__dirname + '/client/index.html'))
 });
 
-app.post('/login', databaseController.login);
+//app.post('/login', databaseController.login);
 
 app.post('/register', databaseController.createUser, (req, res) => {
 

@@ -4,6 +4,9 @@
   "description": "Encrypted messaging application",
   "main": "server.js",
   "scripts": {
+
+    "server": "nodemon server",
+
     "start": "node server",
     "webpack": "webpack",
     "start:dev": "webpack-dev-server  --mode development",
@@ -17,17 +20,22 @@
     "body-parser": "^1.18.3",
     "chai": "^3.4.1",
     "cookie-parser": "^1.4.3",
+    "cookie-session": "^2.0.0-beta.3",
     "css-loader": "^0.28.11",
     "ejs": "^2.6.1",
     "expect": "^1.6.0",
     "express": "^4.13.3",
     "jquery": "^3.3.1",
     "mocha": "^2.3.4",
+    "nodemon": "^1.18.3",
+    "passport": "^0.4.0",
+    "passport-google-oauth20": "^1.0.0",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-hot-loader": "^4.3.3",
+
     "reactify": "^1.1.1",
     "request": "^2.65.0",
     "sass-loader": "^6.0.7",
