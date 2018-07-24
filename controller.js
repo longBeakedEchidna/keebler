@@ -20,8 +20,9 @@ sequelize
 
 let User = sequelize.define('user', {
    name: {type: Sequelize.STRING, unique: true},
-   password: Sequelize.STRING,
-   id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true} 
+	 googleId: {type: Sequelize.STRING, unique: true},
+	 photo:{type:Sequelize.STRING},
+   id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true}
 });
 
 let Message = sequelize.define('message', {
@@ -50,29 +51,42 @@ User.belongsToMany(Room, {
 sequelize.sync();
 
 const databaseController = {
-    createUser: (req, res) => {
-        User.create({name: req.body.name, password: req.body.password}).catch((error) => {
-            // console.log('error caught');
-            // return res.status(400).send({message: error});
-            res.render('../client/register', {usernameTaken: true});
-        }).then((userInstance, error) => {
-            if (error) {
-              return res.status(400).send({message: error});
-            }
-            Room.findOne({where: {id: 2}}).then((roomInstance, error) => {
-                if (error) {
-                    return res.status(400).send({ message: error});
-                }
-                userInstance.addRoom(roomInstance).then(() => {
-                    res.cookie('userId', userInstance.id);
-                    res.cookie('userName', userInstance.name);
-                    res.cookie('roomId', 2);
-                    res.cookie('roomName', 'Main');
-                    res.redirect('/home');
-                });
-                // console.log(userInstance);
-            });
-        });
+    createUser: (profile,req, res) => {
+			 	console.log('profileId ', profile);
+				let profileId = profile.id;
+				let name = profile.name.givenName;
+				let photo = profile.photos[0].value;
+				console.log(`name `, name);
+				console.log('photos ', photo);
+				let newPromise1 = new Promise((resolve,reject)=>{
+					User.findOrCreate({
+						where:{googleId:profileId},
+						defaults :{	name:name,photo:photo}}).then((user, created) => {
+						// console.log('userInstance ', user);
+
+							console.log('USERRRRINSTANCEEE ', user);
+							resolve(user);
+							// Room.findOne({where: {id: 2}}).then((roomInstance, error) => {
+							//     if (error) {
+							//         return res.status(400).send({ message: error});
+							//     }
+							//     userInstance.addRoom(roomInstance).then(() => {
+							//         res.cookie('userId', userInstance.id);
+							//         res.cookie('userName', userInstance.name);
+							//         res.cookie('roomId', 2);
+							//         res.cookie('roomName', 'Main');
+							//         res.redirect('/home');
+							//     });
+							//     // console.log(userInstance);
+							// });
+					}).catch((error) => {
+					reject(error);
+					// console.log('error caught');
+					// return res.status(400).send({message: error});
+					//res.render('../client/register', {usernameTaken: true});
+			});
+			})
+			return newPromise1;
     },
 
     createMessage: (req, res) => {
@@ -149,8 +163,8 @@ const databaseController = {
         Room.findAll({
             include: [{
                 model: User,
-                through: { 
-                    attributes: ['id']              
+                through: {
+                    attributes: ['id']
                 },
                 where: {
                     id: req.cookies.userId
@@ -166,8 +180,8 @@ const databaseController = {
         User.findAll({
             include: [{
                 model: Room,
-                through: { 
-                    attributes: ['id']              
+                through: {
+                    attributes: ['id']
                 },
                 where: {
                     id: req.cookies.roomId
@@ -193,18 +207,21 @@ const databaseController = {
         });
     },
 
-    login: (req, res) => {
-        User.findOne({ where: {name: req.body.name, password: req.body.password}}).then((userInstance, error) => {
-            if (! userInstance) {
-                res.render('../client/login', {incorrectCredentials: true});    
-            }
-            else {
-                res.cookie('userId', userInstance.id);
-                res.cookie('userName', userInstance.name);
-                res.cookie('roomId', 2);
-                res.cookie('roomName', 'Main');
-                res.redirect('/home');
-            }
+    login: (userId,req, res) => {
+        User.findOne({ where: {id:userId}}).then((userInstance, error) => {
+            // if (! userInstance) {
+						// 	 return new error('user does not exist');
+            //     // res.render('../client/login', {incorrectCredentials: true});
+            // }
+						console.log('LOGINNN ', userInstance);
+						return userInstance;
+            // else {
+            //     res.cookie('userId', userInstance.id);
+            //     res.cookie('userName', userInstance.name);
+            //     res.cookie('roomId', 2);
+            //     res.cookie('roomName', 'Main');
+            //     res.redirect('/home');
+            // }
         });
     },
 };

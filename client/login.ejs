@@ -3,10 +3,10 @@
     <meta charset="UTF-8">
     <title>Keebler Encrypted</title>
   </head>
-    
+
   <body>
     <h1>Login</h1>
-    <form method="POST" action='/login'>
+    <form method="POST" action='/auth/google'>
         <input type="text" name="name" placeholder="username" autocomplete="off" required>
         <input type="text" name="password" placeholder="password" autocomplete="off" required>
         <input type="submit" value="submit">
@@ -19,7 +19,7 @@
         };
     </script>
     <%if (incorrectCredentials) { %>
-        <p>User and/or password is incorrect. Please try again or sign up.</p> 
+        <p>User and/or password is incorrect. Please try again or sign up.</p>
     <% } %>
   </body>
 
