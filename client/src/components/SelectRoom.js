@@ -4,6 +4,8 @@ import CreateRoom from './CreateRoom';
 import SwitchRoom from './SwitchRoom';
 import axios from 'axios';
 import data from '../dummy.js';
+import DisplayParticipants from './DisplayParticipants';
+import DisplayMessages from './DisplayMessages';
 
 class SelectRoom extends Component {
   constructor(props) {
@@ -16,6 +18,8 @@ class SelectRoom extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleRoomChange = this.handleRoomChange.bind(this);
   }
 
   handleClick(e) {
@@ -55,6 +59,10 @@ class SelectRoom extends Component {
     this.setState({ roomName: e.target.value });
   }
 
+  handleRoomChange(e) {
+    this.setState({ roomName: e.target.innerText });
+  }
+
   handleSubmit() {
     axios.post('http://localhost:8080/createRoom', { data: 'data' });
   }
@@ -83,7 +91,7 @@ class SelectRoom extends Component {
         </div>
         <div className="roomContainer">
           {display === 'switchRoom' ? (
-            <SwitchRoom />
+            <SwitchRoom handleRoomChange={this.handleRoomChange} />
           ) : display === 'createRoom' ? (
             <CreateRoom
               handleChange={this.handleChange}
@@ -95,6 +103,7 @@ class SelectRoom extends Component {
             ''
           )}
         </div>
+        <DisplayParticipants roomName={this.state.roomName} />
       </div>
     );
   }
