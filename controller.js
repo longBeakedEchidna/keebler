@@ -20,8 +20,7 @@ sequelize
 
 let User = sequelize.define('user', {
    name: {type: Sequelize.STRING, unique: true},
-	 googleId: {type: Sequelize.STRING, unique: true},
-	 photo:{type:Sequelize.STRING},
+   password: Sequelize.STRING,
    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true}
 });
 
@@ -51,54 +50,75 @@ User.belongsToMany(Room, {
 sequelize.sync();
 
 const databaseController = {
-    createUser: (profile,req, res) => {
-			 	console.log('profileId ', profile);
-				let profileId = profile.id;
-				let name = profile.name.givenName;
-				let photo = profile.photos[0].value;
-				console.log(`name `, name);
-				console.log('photos ', photo);
-				let newPromise1 = new Promise((resolve,reject)=>{
-					User.findOrCreate({
-						where:{googleId:profileId},
-						defaults :{	name:name,photo:photo}}).then((user, created) => {
-						// console.log('userInstance ', user);
+    createUser: (req, res) => {
+			  console.log(req.body);
+				let name = req.body.name;
+				let password = req.body.password;
+				let user,room;
+				console.log(`password ${password}`);
+        User.create({name: name, password: password})
+					.then((user) =>{
+							console.log('userrr ', user.toJSON());
+							user = user;
+							Room.findOne({where: {id: 3}})
+							.then((room) =>{
+								console.log('room ', room);
+								if(!room){
+									Room.create({name:'toothless'})
+									.then((room)=>{
+										console.log('RROOOMMM',room);
+										//room = room;
+										console.log('USSSEERRRR',user)
+											user.addRoom(room)})
+								}else{
+									console.log('RROOOMMM',room);
+									//room = room;
+									console.log(User)
+									user.addRoom(room)
+								}
+							})
+							.then(()=>{
+								res.send(user)})
+						})
+						.catch(err=>res.json(err))
 
-							console.log('USERRRRINSTANCEEE ', user);
-							resolve(user);
-							// Room.findOne({where: {id: 2}}).then((roomInstance, error) => {
-							//     if (error) {
-							//         return res.status(400).send({ message: error});
-							//     }
-							//     userInstance.addRoom(roomInstance).then(() => {
-							//         res.cookie('userId', userInstance.id);
-							//         res.cookie('userName', userInstance.name);
-							//         res.cookie('roomId', 2);
-							//         res.cookie('roomName', 'Main');
-							//         res.redirect('/home');
-							//     });
-							//     // console.log(userInstance);
-							// });
-					}).catch((error) => {
-					reject(error);
-					// console.log('error caught');
-					// return res.status(400).send({message: error});
-					//res.render('../client/register', {usernameTaken: true});
-			});
-			})
-			return newPromise1;
+
+					//})
+        //     // console.log('error caught');
+        //     // return res.status(400).send({message: error});
+        //     res.render('../client/register', {usernameTaken: true});
+        // }).then((userInstance, error) => {
+        //     if (error) {
+        //       return res.status(400).send({message: error});
+        //     }
+            // Room.findOne({where: {id: 2}}).then((roomInstance, error) => {
+            //     if (error) {
+            //         return res.status(400).send({ message: error});
+            //     }
+            //     userInstance.addRoom(roomInstance).then(() => {
+            //         res.cookie('userId', userInstance.id);
+            //         res.cookie('userName', userInstance.name);
+            //         res.cookie('roomId', 2);
+            //         res.cookie('roomName', 'Main');
+            //         res.redirect('/home');
+            //     });
+            //     // console.log(userInstance);
+            // });
+        // });
     },
 
     createMessage: (req, res) => {
-        Message.create({message: req.body.message, senderId: req.cookies.userId, roomId: req.cookies.roomId}).then((messageIntance, error) => {
+			console.log('createeee message', req.body);
+        Message.create({message: req.body.message, senderId: req.body.senderId, roomId: req.body.roomId}).then((messageIntance, error) => {
             if (error) {
                 return res.status(400).send({message: error});
             }
-            res.redirect('/home');
+            res.send(messageIntance);
         })
     },
 
     getMessages: (req, res) => {
+			console.log('req.body ', req.query);
         Message.findAll({
             where: {roomId: req.cookies.roomId}
         }).then((messages, error) => {
@@ -207,21 +227,18 @@ const databaseController = {
         });
     },
 
-    login: (userId,req, res) => {
-        User.findOne({ where: {id:userId}}).then((userInstance, error) => {
-            // if (! userInstance) {
-						// 	 return new error('user does not exist');
-            //     // res.render('../client/login', {incorrectCredentials: true});
-            // }
-						console.log('LOGINNN ', userInstance);
-						return userInstance;
-            // else {
-            //     res.cookie('userId', userInstance.id);
-            //     res.cookie('userName', userInstance.name);
-            //     res.cookie('roomId', 2);
-            //     res.cookie('roomName', 'Main');
-            //     res.redirect('/home');
-            // }
+    login: (req, res) => {
+        User.findOne({ where: {name: req.body.name, password: req.body.password}}).then((userInstance, error) => {
+            if (! userInstance) {
+                res.render('../client/login', {incorrectCredentials: true});
+            }
+            else {
+                res.cookie('userId', userInstance.id);
+                res.cookie('userName', userInstance.name);
+                res.cookie('roomId', 2);
+                res.cookie('roomName', 'Main');
+                res.redirect('/home');
+            }
         });
     },
 };
