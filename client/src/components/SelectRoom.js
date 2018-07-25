@@ -104,6 +104,7 @@ class SelectRoom extends Component {
           )}
         </div>
         <DisplayParticipants roomName={this.state.roomName} />
+        <DisplayMessages roomName={this.state.roomName} />
       </div>
     );
   }

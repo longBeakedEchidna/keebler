@@ -2,11 +2,14 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { hot } from 'react-hot-loader';
 import Home from './Home.js';
+import SignUp from './SignUp.js';
 
 class Login extends Component {
   constructor(props) {
     super(props);
-    this.state = { success: false };
+    this.state = {
+      status: false
+    };
   }
 
   handleClick(e) {
@@ -14,14 +17,17 @@ class Login extends Component {
       // axios.get('http://localhost:8080/auth/google').then(response => {
       //   console.log('user login response', response);
       // });
-      this.setState({ success: true });
+      this.setState({ status: 'loggedIn' });
+    }
+    if (e.target.id === 'signUpButton') {
+      this.setState({ status: 'signingIn' });
     }
   }
 
   render() {
     return (
       <div className="Login">
-        {this.state.success === true ? (
+        {this.state.status === 'loggedIn' ? (
           <Home />
         ) : (
           <button
@@ -31,6 +37,18 @@ class Login extends Component {
             }}
           >
             Login With Google
+          </button>
+        )}
+        {this.state.status === 'signingIn' ? (
+          <SignUp />
+        ) : (
+          <button
+            id="signUpButton"
+            onClick={e => {
+              this.handleClick(e);
+            }}
+          >
+            Sign-Up
           </button>
         )}
       </div>

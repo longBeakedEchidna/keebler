@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { hot } from 'react-hot-loader';
 import data from '../dummy.js';
 import Login from './Login.js';
+import SignUp from './SignUp.js';
 
 class App extends Component {
   render() {
