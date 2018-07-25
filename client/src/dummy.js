@@ -1,5 +1,6 @@
 const data = {
-  username: 'frank'
+  username: 'frank',
+  users: ['manjeet', 'jonathan', 'mark', 'chris', 'rebecca', 'alex']
 };
 
 export default data;

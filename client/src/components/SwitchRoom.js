@@ -5,7 +5,7 @@ class SwitchRoom extends Component {
   render() {
     return (
       <div className="SwitchRoom">
-        <button ahref="http://localhost:8080/auth/google" />
+        <h1>Switch Room</h1>
       </div>
     );
   }
