@@ -7,7 +7,7 @@ class DisplayParticipants extends Component {
     let participants = data.fakeTable.filter(element => {
       return data.roomList[element.room] === this.props.roomName;
     });
-    console.log(participants);
+    // console.log(participants);
     return (
       <div>
         <h3>
